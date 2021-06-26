@@ -111,15 +111,8 @@ def shortest_path(source, target):
         #Check if solved
         if node.state == target:
             print("Cost:", cost)
-            solution = []
+            return getSolutionPath(node)
 
-            while node.parent is not None:
-                solution.append((node.action, node.state))
-                node = node.parent
-            
-            solution.reverse()
-            return solution
-        
         #Mark person explored
         explored.add(node.state)
 
@@ -129,6 +122,12 @@ def shortest_path(source, target):
                 child = Node(state=person, parent=node, action=movie)
                 frontier.add(child)
 
+
+def getSolutionPath(node):
+    if node.parent is None:
+        return []
+    
+    return getSolutionPath(node.parent) + [(node.action, node.state)]
 
 def person_id_for_name(name):
     """
