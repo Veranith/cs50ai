@@ -1,0 +1,4 @@
+*.devcontainer
+*.vscode
+*__pycache__/
+*~lock.*
