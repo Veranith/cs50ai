@@ -92,8 +92,8 @@ def shortest_path(source, target):
     """
 
     start = Node(state=source, parent=None, action=None)
-    frontier = StackFrontier()
-    #frontier = QueueFrontier()
+    #frontier = StackFrontier()
+    frontier = QueueFrontier()
     frontier.add(start)
     explored = set()
     cost = 0
@@ -108,11 +108,7 @@ def shortest_path(source, target):
         node = frontier.remove()
         cost += 1
 
-        #Check if solved
-        if node.state == target:
-            print("Cost:", cost)
-            return getSolutionPath(node)
-
+        
         #Mark person explored
         explored.add(node.state)
 
@@ -120,6 +116,12 @@ def shortest_path(source, target):
         for movie, person in neighbors_for_person(node.state):
             if not frontier.contains_state(person) and person not in explored:
                 child = Node(state=person, parent=node, action=movie)
+                
+                #Check if solved
+                if child.state == target:
+                    print("Cost:", cost)
+                    return getSolutionPath(child)
+
                 frontier.add(child)
 
 
