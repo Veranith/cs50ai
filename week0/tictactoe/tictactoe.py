@@ -18,7 +18,6 @@ def initial_state():
             [EMPTY, EMPTY, EMPTY],
             [EMPTY, EMPTY, EMPTY]]
 
-    # test = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
 
 def player(board):
     """
@@ -94,8 +93,6 @@ def checkWinnerCol(board):
 
 
 def checkWinnerDiag(board):
-    [(0,0),(1,1),(2,2)],
-    [(0,2),(1,1),(2,0)]
 
     if board[0][0] == board[1][1] == board[2][2] != None:
         return board[0][0]
@@ -142,14 +139,14 @@ def minimax(board):
     if curPlayer == X:
         maxScore = -math.inf
         for move in moves:
-            score = minValue(result(board,move))
+            score = minValue(result(board, move))
             if score > maxScore:
                 maxScore = score
                 bestAction = move
     else:
         minScore = math.inf
         for move in moves:
-            score = maxValue(result(board,move))
+            score = maxValue(result(board, move))
             if score < minScore:
                 minScore = score
                 bestAction = move
