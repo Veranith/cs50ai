@@ -156,9 +156,6 @@ def minimax(board):
         
     return bestAction    
 
-    # Max play picks atction in actions(board) that produces the highest in min-value(result(board,a))
-    # Min opposite
-    # raise NotImplementedError
 
 def minValue(state):
     if terminal(state):
@@ -168,6 +165,7 @@ def minValue(state):
         score = min(score, maxValue(result(state, action)))
 
     return score
+
 
 def maxValue(state):
     if terminal(state):
