@@ -70,7 +70,6 @@ def main():
         sys.exit("Person not found.")
 
     path = shortest_path(source, target)
-
     if path is None:
         print("Not connected.")
     else:
@@ -92,9 +91,45 @@ def shortest_path(source, target):
     If no possible path, returns None.
     """
 
-    # TODO
-    raise NotImplementedError
+    start = Node(state=source, parent=None, action=None)
+    #frontier = StackFrontier()
+    frontier = QueueFrontier()
+    frontier.add(start)
+    explored = set()
+    cost = 0
 
+    
+    while True:
+        # Check if frontier is empty
+        if frontier.empty():
+            raise Exception("no solution")
+
+        # Get the next node
+        node = frontier.remove()
+        cost += 1
+
+        
+        #Mark person explored
+        explored.add(node.state)
+
+        # Add children nodes to the frontier
+        for movie, person in neighbors_for_person(node.state):
+            if not frontier.contains_state(person) and person not in explored:
+                child = Node(state=person, parent=node, action=movie)
+                
+                #Check if solved
+                if child.state == target:
+                    print("Cost:", cost)
+                    return getSolutionPath(child)
+
+                frontier.add(child)
+
+
+def getSolutionPath(node):
+    if node.parent is None:
+        return []
+    
+    return getSolutionPath(node.parent) + [(node.action, node.state)]
 
 def person_id_for_name(name):
     """
