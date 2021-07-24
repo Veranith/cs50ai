@@ -1,4 +1,4 @@
-week0/degrees/.devcontainer
-week0/degrees/.vscode
-week0/degrees/__pycache__/
+*.devcontainer
+*.vscode
+*__pycache__/
 *~lock.*
