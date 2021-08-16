@@ -1,5 +1,6 @@
 import itertools
 import random
+from typing import no_type_check_decorator
 
 
 class Minesweeper():
@@ -105,27 +106,38 @@ class Sentence():
         """
         Returns the set of all cells in self.cells known to be mines.
         """
-        raise NotImplementedError
+        # if number of cells = count
+        if len(self.cells) == self.count:
+            return self.cells.copy()
+        return {}
 
     def known_safes(self):
         """
         Returns the set of all cells in self.cells known to be safe.
         """
-        raise NotImplementedError
+        # if count is 0?
+        if self.count == 0:
+            return self.cells.copy()
+        return {}
 
     def mark_mine(self, cell):
         """
         Updates internal knowledge representation given the fact that
         a cell is known to be a mine.
         """
-        raise NotImplementedError
+        if cell in self.cells:
+            self.cells.remove(cell)
+            self.count -= 1
+        return
 
     def mark_safe(self, cell):
         """
         Updates internal knowledge representation given the fact that
         a cell is known to be safe.
         """
-        raise NotImplementedError
+        if cell in self.cells:
+            self.cells.remove(cell)
+        return
 
 
 class MinesweeperAI():
@@ -182,7 +194,37 @@ class MinesweeperAI():
             5) add any new sentences to the AI's knowledge base
                if they can be inferred from existing knowledge
         """
-        raise NotImplementedError
+        # 1) mark the cell as a move that has been made
+        self.moves_made.add(cell)
+
+        # 2) mark the cell as safe
+        self.mark_safe(cell)
+        
+        # 3) add a new sentence to the AI's knowledge base
+        #    based on the value of `cell` and `count`
+        neighbors, count = self.get_neighbors(cell, count)
+        if len(neighbors) != 0:
+            self.knowledge.append(Sentence(neighbors, count))
+        
+            # 4) mark any additional cells as safe or as mines
+            #    if it can be concluded based on the AI's knowledge base
+
+            for sentence in self.knowledge:
+                for mine in sentence.known_mines():
+                    if mine not in self.mines:
+                        self.mark_mine(mine)
+
+                for safe in sentence.known_safes():
+                    if safe not in self.safes:
+                        self.mark_safe(safe)
+        
+        # 5) add any new sentences to the AI's knowledge base
+        #    if they can be inferred from existing knowledge
+
+        # remove empty sentences
+        self.knowledge = [x for x in self.knowledge if len(x.cells) > 0]
+
+        return
 
     def make_safe_move(self):
         """
@@ -193,7 +235,12 @@ class MinesweeperAI():
         This function may use the knowledge in self.mines, self.safes
         and self.moves_made, but should not modify any of those values.
         """
-        raise NotImplementedError
+        for move in self.safes:
+            if move in self.moves_made:
+                continue
+            else:
+                return move
+        return
 
     def make_random_move(self):
         """
@@ -202,4 +249,37 @@ class MinesweeperAI():
             1) have not already been chosen, and
             2) are not known to be mines
         """
-        raise NotImplementedError
+        while True:
+            if (self.height * self.width) == len(self.moves_made) + len(self.mines):
+                return None
+            i = random.randint(0,self.height - 1 )
+            j = random.randint(0,self.width -1 )
+
+            if (i, j) in self.moves_made or (i, j) in self.mines:
+                continue
+
+            return (i, j)
+
+    def get_neighbors(self, cell, count):
+        # Loop over all cells within one row and column
+        neighbors = set()
+        for i in range(cell[0] - 1, cell[0] + 2):
+            for j in range(cell[1] - 1, cell[1] + 2):
+                # Ignore the cell itself
+                if (i, j) == cell:
+                    continue
+
+                # Ignore safe cells.
+                if (i, j) in self.safes:
+                    continue
+
+                # Ignore mines and remove from the count. 
+                if (i, j) in self.mines:
+                    count -= 1
+                    continue
+
+                # Add neighbor if cell in bounds.
+                if 0 <= i < self.height and 0 <= j < self.width:
+                    neighbors.add((i,j))
+        
+        return neighbors, count
