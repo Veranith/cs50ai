@@ -223,6 +223,20 @@ class MinesweeperAI():
 
         # remove empty sentences
         self.knowledge = [x for x in self.knowledge if len(x.cells) > 0]
+        
+        # remove subsets and make new knowledge
+        if len(self.knowledge) >= 2:
+            newKnowledge = []
+            for outside in self.knowledge:
+                for inside in self.knowledge:
+                    if inside.cells < outside.cells:
+                        newKnowledge.append(Sentence(outside.cells - inside.cells, outside.count - inside.count))
+
+            # add new knowledge if it's not duplicate. 
+            while len(newKnowledge) > 0:
+                knowlege = newKnowledge.pop()
+                if knowlege not in self.knowledge:
+                    self.knowledge.append(knowlege)
 
         return
 
