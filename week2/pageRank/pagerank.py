@@ -59,16 +59,16 @@ def transition_model(corpus, page, damping_factor):
     """
 
     probabilityDistribution = {}
-    probabilityAll = (1 - damping_factor) * (1 / len(corpus))
+    probabilityAllPages = (1 - damping_factor) * (1 / len(corpus))
 
     for i in corpus:
-        probabilityDistribution[i] = probabilityAll
+        probabilityDistribution[i] = probabilityAllPages
     
-    for i in corpus:
-        if i == page:
-            if len(corpus[i]) > 0:
-                for j in corpus[i]:
-                    probabilityDistribution[j] += damping_factor * (1 / len(corpus[i]))
+    if len(corpus[page]) > 0:
+        numLinks = len(corpus[page])
+        probabilityPageLinks = damping_factor * (1 / numLinks)
+        for j in corpus[page]:
+            probabilityDistribution[j] += probabilityPageLinks
 
     return probabilityDistribution
 
