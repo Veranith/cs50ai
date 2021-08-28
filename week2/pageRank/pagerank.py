@@ -60,15 +60,18 @@ def transition_model(corpus, page, damping_factor):
 
     probabilityDistribution = {}
     probabilityAllPages = (1 - damping_factor) * (1 / len(corpus))
+    numPageLinks = len(corpus[page])
 
-    for i in corpus:
-        probabilityDistribution[i] = probabilityAllPages
+    if numPageLinks > 0:
+        for i in corpus:
+            probabilityDistribution[i] = probabilityAllPages
     
-    if len(corpus[page]) > 0:
-        numLinks = len(corpus[page])
-        probabilityPageLinks = damping_factor * (1 / numLinks)
+        probabilityPageLinks = damping_factor * (1 / numPageLinks)
         for j in corpus[page]:
             probabilityDistribution[j] += probabilityPageLinks
+    else:
+        for i in corpus:
+            probabilityDistribution[i] = 1 / len(corpus)
 
     return probabilityDistribution
 
@@ -82,9 +85,9 @@ def sample_pagerank(corpus, damping_factor, n):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    corpus = {"1.html": {"2.html", "3.html"}, "2.html": {"3.html"}, "3.html": {"2.html"}}
+    corpus = {"1.html": {"2.html", "3.html"}, "2.html": {"3.html"}, "3.html": {"2.html"}, "4.html": {}}
 
-    model = transition_model(corpus, "1.html", damping_factor);
+    model = transition_model(corpus, "4.html", damping_factor);
     raise NotImplementedError
 
 
