@@ -2,6 +2,9 @@ import os
 import random
 import re
 import sys
+import random
+from typing import FrozenSet
+from collections import Counter
 
 DAMPING = 0.85
 SAMPLES = 10000
@@ -73,6 +76,9 @@ def transition_model(corpus, page, damping_factor):
         for i in corpus:
             probabilityDistribution[i] = 1 / len(corpus)
 
+    for i in probabilityDistribution:
+        probabilityDistribution[i] = round(probabilityDistribution[i], 4)
+
     return probabilityDistribution
 
 
@@ -85,10 +91,21 @@ def sample_pagerank(corpus, damping_factor, n):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    corpus = {"1.html": {"2.html", "3.html"}, "2.html": {"3.html"}, "3.html": {"2.html"}, "4.html": {}}
 
-    model = transition_model(corpus, "4.html", damping_factor);
-    raise NotImplementedError
+    page = random.choice(list(corpus.keys()))
+
+    data = []
+
+    for i in range(0, n):
+        sample = transition_model(corpus, page, damping_factor)
+        page = random.choices(list(sample.keys()), list(sample.values()))[0]
+        data.append(page)
+     
+    count = Counter(data)
+    for i in count:
+        count[i] /= n
+
+    return count
 
 
 def iterate_pagerank(corpus, damping_factor):
@@ -100,7 +117,55 @@ def iterate_pagerank(corpus, damping_factor):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    raise NotImplementedError
+
+    pages = len(corpus)
+    pageRank = dict()
+
+    # Set inital pageRanks. All pages have equal possibility
+    for item in corpus.keys():
+        pageRank[item] = 1 / pages
+
+    parents = getLinkParents(corpus)
+
+    return iterate_pagerank_sub(corpus, damping_factor, pageRank, parents)
+    
+
+def iterate_pagerank_sub(corpus, damping_factor, pageRank, parents):
+    
+    newPageRank = dict()
+    firstEqSection = (1 - damping_factor) / len(corpus)
+
+    for page in pageRank:
+        result = 0
+        
+        for parent in parents[page]:
+            result += pageRank[parent] / len(corpus[parent])
+
+        newPageRank[page] = firstEqSection + (damping_factor * result)
+    
+    if iterateCheckDifference(newPageRank, pageRank):
+        return newPageRank
+    else:
+        return iterate_pagerank_sub(corpus, damping_factor, newPageRank, parents)
+
+
+def iterateCheckDifference(newPageRank, pageRank):
+    for page in pageRank:
+        if abs(pageRank[page] - newPageRank[page]) > .0001:
+            return False
+    return True
+
+
+def getLinkParents(corpus):
+    parents = {}
+    
+    for page in corpus.keys():
+        parents[page] = set()
+        for item in corpus.keys():
+            if page in corpus[item]:
+                parents[page].add(item)
+
+    return parents
 
 
 if __name__ == "__main__":
