@@ -133,15 +133,15 @@ def iterate_pagerank(corpus, damping_factor):
 def iterate_pagerank_sub(corpus, damping_factor, pageRank, parents):
     
     newPageRank = dict()
-    firstEqSection = (1 - damping_factor) / len(corpus)
+    firstEqSection = round((1 - damping_factor) / len(corpus), 5)
 
     for page in pageRank:
         result = 0
         
         for parent in parents[page]:
-            result += pageRank[parent] / len(corpus[parent])
+            result += pageRank[parent] / (len(corpus[parent]) if len(corpus[parent]) > 0 else 1)
 
-        newPageRank[page] = firstEqSection + (damping_factor * result)
+        newPageRank[page] = round(firstEqSection + (damping_factor * result),6)
     
     if iterateCheckDifference(newPageRank, pageRank):
         return newPageRank
