@@ -62,6 +62,7 @@ def main():
 
     # Loop over all sets of people who might have the trait
     names = set(people)
+
     for have_trait in powerset(names):
 
         # Check if current set of people violates known information
@@ -139,7 +140,65 @@ def joint_probability(people, one_gene, two_genes, have_trait):
         * everyone in set `have_trait` has the trait, and
         * everyone not in set` have_trait` does not have the trait.
     """
-    raise NotImplementedError
+
+    resultProbs = list()
+    for person in people:
+        numGenes = getNumGenes(person, one_gene, two_genes)
+
+        if people[person]["father"]:
+            parentsProb = getParents(people, person, numGenes, one_gene, two_genes)
+            if (person in have_trait):
+                resultProbs.append(parentsProb * PROBS["trait"][numGenes][True])
+            else:
+                resultProbs.append(parentsProb * PROBS["trait"][numGenes][False])
+        else:
+            resultProbs.append(getNoParents(numGenes, people[person]["trait"]))
+
+    result = 1
+    for prob in resultProbs:
+        result *= prob
+
+    return result 
+
+
+def getNumGenes(person, one_gene, two_genes):
+    if person in two_genes:
+        return 2
+    elif person in one_gene:
+        return 1
+    else:
+        return 0
+
+
+def getParents(people, person, numGenes, one_gene, two_genes):
+
+    passGeneProb = {
+        0: PROBS["mutation"],
+        1: .5,
+        2: 1 - PROBS["mutation"]
+    }
+
+    father = people[person]['father']
+    mother = people[person]['mother']
+    fatherNumGenes = getNumGenes(father, one_gene, two_genes)
+    motherNumGenes = getNumGenes(mother, one_gene, two_genes)
+
+
+    motherPassGene = passGeneProb[motherNumGenes]
+    fatherPassGene = passGeneProb[fatherNumGenes]
+    motherNotPassGene = 1 - motherPassGene
+    fatherNotPassGene = 1 - fatherPassGene
+
+    if (numGenes == 0):
+        return motherNotPassGene * fatherNotPassGene
+    if (numGenes == 1):
+        return motherPassGene * fatherNotPassGene + motherNotPassGene * fatherPassGene
+    else:
+        return motherPassGene * fatherPassGene
+
+
+def getNoParents(numGenes, trait):
+    return round(PROBS["gene"][numGenes] * PROBS["trait"][numGenes][trait], 6)
 
 
 def update(probabilities, one_gene, two_genes, have_trait, p):
@@ -149,7 +208,18 @@ def update(probabilities, one_gene, two_genes, have_trait, p):
     Which value for each distribution is updated depends on whether
     the person is in `have_gene` and `have_trait`, respectively.
     """
-    raise NotImplementedError
+    # For each person person in probabilities, the function should update the
+    # probabilities[person]["gene"] distribution and probabilities[person]["trait"] 
+    # distribution by adding p to the appropriate value in each distribution. 
+    # All other values should be left unchanged.
+    
+    for person in probabilities:
+        numGenes = getNumGenes(person, one_gene, two_genes)
+        probabilities[person]["gene"][numGenes] += p
+        if (person in have_trait):
+            probabilities[person]["trait"][True] += p
+        else:
+            probabilities[person]["trait"][False] += p
 
 
 def normalize(probabilities):
@@ -157,7 +227,20 @@ def normalize(probabilities):
     Update `probabilities` such that each probability distribution
     is normalized (i.e., sums to 1, with relative proportions the same).
     """
-    raise NotImplementedError
+    for person in probabilities:
+        sumOfAllGene = 0
+        for n in probabilities[person]["gene"]:
+            sumOfAllGene += probabilities[person]["gene"][n]
+
+        for n in probabilities[person]["gene"]:
+            probabilities[person]["gene"][n] = round(probabilities[person]["gene"][n] / sumOfAllGene, 10)
+
+        sumOfAllTrait = 0
+        for n in probabilities[person]["trait"]:
+            sumOfAllTrait += probabilities[person]["trait"][n]
+        
+        for n in probabilities[person]["trait"]:
+            probabilities[person]["trait"][n] = round(probabilities[person]["trait"][n] / sumOfAllTrait, 10)
 
 
 if __name__ == "__main__":
