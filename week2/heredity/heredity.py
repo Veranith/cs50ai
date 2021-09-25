@@ -147,7 +147,7 @@ def joint_probability(people, one_gene, two_genes, have_trait):
 
         if people[person]["father"]:
             parentsProb = getParents(people, person, numGenes, one_gene, two_genes)
-            if (person in have_trait):
+            if person in have_trait:
                 resultProbs.append(parentsProb * PROBS["trait"][numGenes][True])
             else:
                 resultProbs.append(parentsProb * PROBS["trait"][numGenes][False])
@@ -158,7 +158,7 @@ def joint_probability(people, one_gene, two_genes, have_trait):
     for prob in resultProbs:
         result *= prob
 
-    return result 
+    return result
 
 
 def getNumGenes(person, one_gene, two_genes):
@@ -189,9 +189,9 @@ def getParents(people, person, numGenes, one_gene, two_genes):
     motherNotPassGene = 1 - motherPassGene
     fatherNotPassGene = 1 - fatherPassGene
 
-    if (numGenes == 0):
+    if numGenes == 0:
         return motherNotPassGene * fatherNotPassGene
-    if (numGenes == 1):
+    if numGenes == 1:
         return motherPassGene * fatherNotPassGene + motherNotPassGene * fatherPassGene
     else:
         return motherPassGene * fatherPassGene
@@ -212,11 +212,11 @@ def update(probabilities, one_gene, two_genes, have_trait, p):
     # probabilities[person]["gene"] distribution and probabilities[person]["trait"] 
     # distribution by adding p to the appropriate value in each distribution. 
     # All other values should be left unchanged.
-    
+
     for person in probabilities:
         numGenes = getNumGenes(person, one_gene, two_genes)
         probabilities[person]["gene"][numGenes] += p
-        if (person in have_trait):
+        if person in have_trait:
             probabilities[person]["trait"][True] += p
         else:
             probabilities[person]["trait"][False] += p
