@@ -115,7 +115,7 @@ class CrosswordCreator():
         False if no revision was made.
         """
         # Get overlap and return False if there is none
-        overlap = self.crossword.overlaps.get((x, y))
+        overlap = self.getVariableOverlaps(x, y)
         if overlap is None:
             return False
 
@@ -202,7 +202,7 @@ class CrosswordCreator():
             neighbors = self.crossword.neighbors(x)
             for y in neighbors:
                 if y in assignment:
-                    overlapX, overlapY = self.crossword.overlaps[x, y]
+                    overlapX, overlapY = self.getVariableOverlaps( x, y)
                     if assignment[x][overlapX] != assignment[y][overlapY]:
                         return False
 
@@ -213,26 +213,43 @@ class CrosswordCreator():
         return True
 
     def getWordCount(self, var, assignment):
-        wordCount = {}
+        wordCounts = {}
         varDomains = self.domains[var]
 
         for word in varDomains:
-            count = 0
-            for neighbor in self.crossword.neighbors(var):
-                if neighbor in assignment:
+            
+            neighbors = self.getNeighborsNotInAssignment(var, assignment)
+            
+            wordCounts[word] = self.getNeighborEliminationCount(word, var, neighbors)
+
+        return wordCounts
+
+    def getNeighborsNotInAssignment(self, var, assignment):
+        trimmedNeighboars = set()
+        neighbors = self.crossword.neighbors(var)
+
+        if len(assignment) > 0:
+            for neighbor in neighbors:
+                if neighbor not in assignment:
+                    trimmedNeighboars.add(neighbor)
+            return trimmedNeighboars
+        return neighbors
+
+    def getNeighborEliminationCount(self, word, var, neighbors):
+        count = 0
+        for neighbor in neighbors:
+            wordOverlap, neighborOverlap = self.getVariableOverlaps(var, neighbor)
+
+            for x in self.domains[neighbor]:
+                if word == x:
+                    count += 1
                     continue
-                wordOverlap, neighborOverlap = self.crossword.overlaps.get(
-                    (var, neighbor))
+                if word[wordOverlap] != x[neighborOverlap]:
+                    count += 1
+        return count
 
-                for x in self.domains[neighbor]:
-                    if word == x:
-                        count += 1
-                        continue
-                    if word[wordOverlap] != x[neighborOverlap]:
-                        count += 1
-            wordCount[word] = count
-
-        return wordCount
+    def getVariableOverlaps(self, var1, var2):
+        return self.crossword.overlaps.get((var1, var2))
 
     def order_domain_values(self, var, assignment):
         """
