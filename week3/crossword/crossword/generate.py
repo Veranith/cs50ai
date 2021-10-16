@@ -100,7 +100,8 @@ class CrosswordCreator():
          constraints; in this case, the length of the word.)
         """
         for domain in self.domains:
-            invalidVars = [x for x in self.domains[domain] if len(x) != domain.length]
+            invalidVars = [x for x in self.domains[domain]
+                           if len(x) != domain.length]
             for invalidVar in invalidVars:
                 self.domains[domain].remove(invalidVar)
 
@@ -114,7 +115,7 @@ class CrosswordCreator():
         False if no revision was made.
         """
         # Get overlap and return False if there is none
-        overlap = self.crossword.overlaps.get((x, y)) 
+        overlap = self.crossword.overlaps.get((x, y))
         if overlap is None:
             return False
 
@@ -128,13 +129,13 @@ class CrosswordCreator():
                     break
             if remove:
                 removeWords.add(xWord)
-        
+
         # Remove words if needed and return True if changed
         if len(removeWords) > 0:
             for word in removeWords:
                 self.domains[x].remove(word)
             return True
-        
+
         return False
 
     def ac3(self, arcs=None):
@@ -160,12 +161,12 @@ class CrosswordCreator():
                 for neighbor in self.crossword.neighbors(x):
                     if neighbor != y:
                         arcs.add((neighbor, x))
-        
+
         # return false if any domains are empty
         for x in self.crossword.variables:
             if len(self.domains[x]) == 0:
                 return False
-        
+
         return True
 
     def getAllArcs(self):
@@ -174,8 +175,8 @@ class CrosswordCreator():
         """
         arcs = set()
         for x in self.crossword.variables:
-                for y in self.crossword.neighbors(x):
-                    arcs.add((x, y))
+            for y in self.crossword.neighbors(x):
+                arcs.add((x, y))
         return arcs
 
     def assignment_complete(self, assignment):
@@ -195,7 +196,7 @@ class CrosswordCreator():
         for word in assignment:
             if word.length != len(assignment[word]):
                 return False
-        
+
         # Check overlaps for each variable
         for x in assignment:
             neighbors = self.crossword.neighbors(x)
@@ -208,9 +209,31 @@ class CrosswordCreator():
         # Check that each assignment word is unique
         if len(assignment) != len(set(assignment.values())):
             return False
-        
+
         return True
-    
+
+    def getWordCount(self, var, assignment):
+        wordCount = {}
+        varDomains = self.domains[var]
+
+        for word in varDomains:
+            count = 0
+            for neighbor in self.crossword.neighbors(var):
+                if neighbor in assignment:
+                    continue
+                wordOverlap, neighborOverlap = self.crossword.overlaps.get(
+                    (var, neighbor))
+
+                for x in self.domains[neighbor]:
+                    if word == x:
+                        count += 1
+                        continue
+                    if word[wordOverlap] != x[neighborOverlap]:
+                        count += 1
+            wordCount[word] = count
+
+        return wordCount
+
     def order_domain_values(self, var, assignment):
         """
         Return a list of values in the domain of `var`, in order by
@@ -218,7 +241,12 @@ class CrosswordCreator():
         The first value in the list, for example, should be the one
         that rules out the fewest values among the neighbors of `var`.
         """
-        raise NotImplementedError
+        if len(self.domains[var]) <= 1:
+            return self.domains[var]
+
+        wordCount = self.getWordCount(var, assignment)
+
+        return sorted(wordCount, key=wordCount.__getitem__)
 
     def select_unassigned_variable(self, assignment):
         """
@@ -229,7 +257,7 @@ class CrosswordCreator():
         return values.
         """
 
-        #Loops through finding the variables with the least remaining values
+        # Loops through finding the variables with the least remaining values
         lowestCount = sys.maxsize
         for x in self.crossword.variables:
             if x in assignment:
@@ -241,7 +269,7 @@ class CrosswordCreator():
             elif length == lowestCount:
                 lowestVars.append(x)
 
-        # If there are more than one with the least remaining values, find the one with most neighbors. If tie return the first. 
+        # If there are more than one with the least remaining values, find the one with most neighbors. If tie return the first.
         if len(lowestVars) > 1:
             highestCount = -sys.maxsize
             for x in lowestVars:
@@ -251,9 +279,9 @@ class CrosswordCreator():
                     highestVars = [x]
                 elif neighborCount == highestCount:
                     highestVars.append(x)
-            
+
             return highestVars[0]
-        
+
         return lowestVars[0]
 
     def backtrack(self, assignment):
@@ -271,9 +299,9 @@ class CrosswordCreator():
 
         # Get new unassigned var
         var = self.select_unassigned_variable(assignment)
-        
+
         # Recursively try each possible value for var. Returns final assignments or None
-        for value in self.domains.get(var):
+        for value in self.order_domain_values(var, assignment):
             new_assignment = assignment.copy()
             new_assignment[var] = value
 
@@ -281,7 +309,7 @@ class CrosswordCreator():
                 result = self.backtrack(new_assignment)
                 if result is not None:
                     return result
-        return None       
+        return None
 
 
 def main():
