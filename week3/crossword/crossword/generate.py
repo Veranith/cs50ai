@@ -115,8 +115,9 @@ class CrosswordCreator():
         False if no revision was made.
         """
         # Get overlap and return False if there is none
-        overlap = self.getVariableOverlaps(x, y)
-        if overlap is None:
+        try:
+            overlapX, overlapY = self.getVariableOverlaps(x, y)
+        except TypeError:
             return False
 
         # Loop through and find the words that need removed
@@ -124,7 +125,7 @@ class CrosswordCreator():
         for xWord in self.domains[x]:
             remove = True
             for yWord in self.domains[y]:
-                if xWord[overlap[0]] == yWord[overlap[1]]:
+                if xWord[overlapX] == yWord[overlapY]:
                     remove = False
                     break
             if remove:
@@ -202,7 +203,10 @@ class CrosswordCreator():
             neighbors = self.crossword.neighbors(x)
             for y in neighbors:
                 if y in assignment:
-                    overlapX, overlapY = self.getVariableOverlaps( x, y)
+                    try:
+                        overlapX, overlapY = self.getVariableOverlaps(x, y)
+                    except TypeError:
+                        return False
                     if assignment[x][overlapX] != assignment[y][overlapY]:
                         return False
 
@@ -212,15 +216,16 @@ class CrosswordCreator():
 
         return True
 
-    def getWordCount(self, var, assignment):
+    def getWordElimiationCount(self, var, assignment):
         wordCounts = {}
         varDomains = self.domains[var]
 
         for word in varDomains:
-            
+
             neighbors = self.getNeighborsNotInAssignment(var, assignment)
-            
-            wordCounts[word] = self.getNeighborEliminationCount(word, var, neighbors)
+
+            wordCounts[word] = self.getNeighborEliminationCount(
+                word, var, neighbors)
 
         return wordCounts
 
@@ -236,14 +241,26 @@ class CrosswordCreator():
         return neighbors
 
     def getNeighborEliminationCount(self, word, var, neighbors):
-        count = 0
-        for neighbor in neighbors:
-            wordOverlap, neighborOverlap = self.getVariableOverlaps(var, neighbor)
 
+        count = 0
+
+        # Check each neighbor
+        for neighbor in neighbors:
+            try:
+                wordOverlap, neighborOverlap = self.getVariableOverlaps(
+                    var, neighbor)
+            except TypeError:
+                continue
+
+            # Loop through all words in the neighbors domain
             for x in self.domains[neighbor]:
+
+                # Count if word is in neighbor domain
                 if word == x:
                     count += 1
                     continue
+
+                # Count words that do not overlap correctly
                 if word[wordOverlap] != x[neighborOverlap]:
                     count += 1
         return count
@@ -258,11 +275,14 @@ class CrosswordCreator():
         The first value in the list, for example, should be the one
         that rules out the fewest values among the neighbors of `var`.
         """
+        # If there is only one or less words, return the exsiting list.
         if len(self.domains[var]) <= 1:
             return self.domains[var]
 
-        wordCount = self.getWordCount(var, assignment)
+        # Get a dictionay of all words in the domain with their related count of how many items they eliminate.
+        wordCount = self.getWordElimiationCount(var, assignment)
 
+        # Sort wordcount by the lowest value to the highest
         return sorted(wordCount, key=wordCount.__getitem__)
 
     def select_unassigned_variable(self, assignment):
