@@ -60,46 +60,28 @@ def load_data(filename):
     labels should be the corresponding list of labels, where each label
     is 1 if Revenue is true, and 0 otherwise.
     """
-    data = getShoppingData(filename)
+    
+    data = cleanupRawShoppingData(pandas.read_csv(filename))
 
-    evidence = list()
-    labels = list()
-    for index, row in data.iterrows():
-        evidence.append([
-            (int)(row["Administrative"]),
-            (float)(row["Administrative_Duration"]),
-            (int)(row["Informational"]),
-            (float)(row["Informational_Duration"]),
-            (int)(row["ProductRelated"]),
-            (float)(row["ProductRelated_Duration"]),
-            (float)(row["BounceRates"]),
-            (float)(row["ExitRates"]),
-            (float)(row["PageValues"]),
-            (float)(row["SpecialDay"]),
-            (int)(row["Month"]),
-            (int)(row["OperatingSystems"]),
-            (int)(row["Browser"]),
-            (int)(row["Region"]),
-            (int)(row["TrafficType"]),
-            (int)(row["VisitorType"]),
-            (int)(row["Weekend"])
-        ])
-        labels.append((int)(row["Revenue"]))
+    evidence = data.drop(columns="Revenue").values.tolist()
+    labels = data.loc[:, 'Revenue'].values.tolist()
         
     return (evidence, labels)
 
 
-def getShoppingData(filename):
+def cleanupRawShoppingData(data):
     months = {'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 
               'May': 4, 'June': 5, 'Jul': 6, 'Aug': 7,
               'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
               }
     visitorTypes = {'Returning_Visitor': 1, 'New_Visitor': 0, 'Other': 0}
-    
-    df = pandas.read_csv(filename)
-    df.Month = df.Month.map(months)
-    df.VisitorType = df.VisitorType.map(visitorTypes)
-    return df
+    columnDataTypes = {"Weekend": int, "Revenue": int}
+
+    data.Month = data.Month.map(months)
+    data.VisitorType = data.VisitorType.map(visitorTypes)
+    data = data.astype(columnDataTypes)
+
+    return data
 
 
 def train_model(evidence, labels):
