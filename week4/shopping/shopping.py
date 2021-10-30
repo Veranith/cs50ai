@@ -1,5 +1,6 @@
 import csv
 import sys
+import pandas
 
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
@@ -59,7 +60,41 @@ def load_data(filename):
     labels should be the corresponding list of labels, where each label
     is 1 if Revenue is true, and 0 otherwise.
     """
-    raise NotImplementedError
+    months = {'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 
+              'May': 4, 'June': 5, 'Jul': 6, 'Aug': 7,
+              'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
+             }
+    visitorTypes = {'Returning_Visitor': 1, 'New_Visitor': 0, 'Other': 0}
+    
+    df = pandas.read_csv(filename)
+    df.Month = df.Month.map(months)
+    df.VisitorType = df.VisitorType.map(visitorTypes)
+
+    evidence = list()
+    labels = list()
+    for index, row in df.iterrows():
+        evidence.append([
+            (int)(row["Administrative"]),
+            (float)(row["Administrative_Duration"]),
+            (int)(row["Informational"]),
+            (float)(row["Informational_Duration"]),
+            (int)(row["ProductRelated"]),
+            (float)(row["ProductRelated_Duration"]),
+            (float)(row["BounceRates"]),
+            (float)(row["ExitRates"]),
+            (float)(row["PageValues"]),
+            (float)(row["SpecialDay"]),
+            (int)(row["Month"]),
+            (int)(row["OperatingSystems"]),
+            (int)(row["Browser"]),
+            (int)(row["Region"]),
+            (int)(row["TrafficType"]),
+            (int)(row["VisitorType"]),
+            (int)(row["Weekend"])
+        ])
+        labels.append((int)(row["Revenue"]))
+        
+    return (evidence, labels)
 
 
 def train_model(evidence, labels):
@@ -67,7 +102,11 @@ def train_model(evidence, labels):
     Given a list of evidence lists and a list of labels, return a
     fitted k-nearest neighbor model (k=1) trained on the data.
     """
-    raise NotImplementedError
+    neigh = KNeighborsClassifier(n_neighbors = 1)
+    neigh.fit(evidence, labels)
+
+    return neigh
+    
 
 
 def evaluate(labels, predictions):
