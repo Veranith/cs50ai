@@ -122,7 +122,10 @@ def evaluate(labels, predictions):
             if labels[x] == predictions[x]:
                 negativePredictions += 1
 
-    return (positivePredictions / negativeTotal, negativePredictions / negativeTotal)
+    sensitivity = positivePredictions / positiveTotal
+    specificity = negativePredictions / negativeTotal
+
+    return (sensitivity, specificity)
 
 
 if __name__ == "__main__":
