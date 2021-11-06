@@ -131,23 +131,19 @@ class NimAI():
         Q-value in `self.q`. If there are no available actions in
         `state`, return 0.
         """
+        bestAction, highestReward = self.getBestActionAndReward(state)
+        return highestReward
+
+    def getBestActionAndReward(self, state):
         actions = Nim.available_actions(state)
         if len(actions) == 0:
-            return 0
-        highest = -math.inf
+            return (0, 0)
+        highestReward = -math.inf
         for action in actions:
-            if self.get_q_value(state, action) > highest:
-                highest = self.get_q_value(state, action)
-        return highest
-
-    def getBestAction(self, state):
-        actions = Nim.available_actions(state)
-        highest = -math.inf
-        for action in actions:
-            if self.get_q_value(state, action) > highest:
+            if self.get_q_value(state, action) > highestReward:
                 bestAction = action
-                highest = self.get_q_value(state, action)
-        return bestAction
+                highestReward = self.get_q_value(state, action)
+        return bestAction, highestReward
 
     def choose_action(self, state, epsilon=True):
         """
@@ -168,11 +164,8 @@ class NimAI():
         if (epsilon == True and randomNum < self.epsilon) or len(self.q) == 0:
             return random.choice(list(Nim.available_actions(state)))
         else:
-            return self.getBestAction(state)
-            highestValue = self.best_future_reward(state)
-            result = self.q.keys()[self.q.values().index(
-                highestValue)]
-            return result
+            bestAction, highestReward = self.getBestActionAndReward(state)
+            return bestAction
 
 
 def train(n):
