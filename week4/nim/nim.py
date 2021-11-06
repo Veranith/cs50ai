@@ -101,7 +101,7 @@ class NimAI():
         Return the Q-value for the state `state` and the action `action`.
         If no Q-value exists yet in `self.q`, return 0.
         """
-        raise NotImplementedError
+        return self.q.get((tuple(state), action), 0)
 
     def update_q_value(self, state, action, old_q, reward, future_rewards):
         """
@@ -118,7 +118,8 @@ class NimAI():
         `alpha` is the learning rate, and `new value estimate`
         is the sum of the current reward and estimated future rewards.
         """
-        raise NotImplementedError
+        self.q[tuple(state), action] = old_q + self.alpha * \
+            ((reward + future_rewards) - old_q)
 
     def best_future_reward(self, state):
         """
@@ -130,24 +131,48 @@ class NimAI():
         Q-value in `self.q`. If there are no available actions in
         `state`, return 0.
         """
-        raise NotImplementedError
+        actions = Nim.available_actions(state)
+        if len(actions) == 0:
+            return 0
+        highest = -math.inf
+        for action in actions:
+            if self.get_q_value(state, action) > highest:
+                highest = self.get_q_value(state, action)
+        return highest
+
+    def getBestAction(self, state):
+        actions = Nim.available_actions(state)
+        highest = -math.inf
+        for action in actions:
+            if self.get_q_value(state, action) > highest:
+                bestAction = action
+                highest = self.get_q_value(state, action)
+        return bestAction
 
     def choose_action(self, state, epsilon=True):
         """
         Given a state `state`, return an action `(i, j)` to take.
 
-        If `epsilon` is `False`, then return the best action
+        If `epsilon` is `False`, then return t action
         available in the state (the one with the highest Q-value,
         using 0 for pairs that have no Q-values).
 
         If `epsilon` is `True`, then with probability
         `self.epsilon` choose a random available action,
-        otherwise choose the best action available.
+        otherwise choose t action available.
 
         If multiple actions have the same Q-value, any of those
         options is an acceptable return value.
         """
-        raise NotImplementedError
+        randomNum = random.random()
+        if (epsilon == True and randomNum < self.epsilon) or len(self.q) == 0:
+            return random.choice(list(Nim.available_actions(state)))
+        else:
+            return self.getBestAction(state)
+            highestValue = self.best_future_reward(state)
+            result = self.q.keys()[self.q.values().index(
+                highestValue)]
+            return result
 
 
 def train(n):
