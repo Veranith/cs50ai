@@ -198,6 +198,9 @@ def getParents(people, person, numGenes, one_gene, two_genes):
 
 
 def getNoParents(numGenes, trait):
+    if trait is None:
+        return round(PROBS["gene"][numGenes], 6)
+        
     return round(PROBS["gene"][numGenes] * PROBS["trait"][numGenes][trait], 6)
 
 
