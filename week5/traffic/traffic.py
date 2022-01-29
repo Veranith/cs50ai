@@ -61,7 +61,6 @@ def load_data(data_dir):
 
     imageList = list()
     catetgoryList = list()
-
     for currentCategory in range(NUM_CATEGORIES):
         currentPath = os.path.join(data_dir, (str)(currentCategory))
         for filename in os.listdir(currentPath):
@@ -96,7 +95,34 @@ def get_model():
     `input_shape` of the first layer is `(IMG_WIDTH, IMG_HEIGHT, 3)`.
     The output layer should have `NUM_CATEGORIES` units, one for each category.
     """
-    raise NotImplementedError
+
+    model = tf.keras.models.Sequential(
+        [
+            tf.keras.layers.Rescaling(
+                1./255, input_shape=(IMG_HEIGHT, IMG_WIDTH, 3)),
+            tf.keras.layers.Conv2D(16, 3, padding='same', activation='relu'),
+            tf.keras.layers.MaxPooling2D(),
+            tf.keras.layers.Conv2D(32, 3, padding='same', activation='relu'),
+            tf.keras.layers.MaxPooling2D(),
+            tf.keras.layers.Conv2D(64, 3, padding='same', activation='relu'),
+            tf.keras.layers.MaxPooling2D(),
+            tf.keras.layers.Flatten(),
+            tf.keras.layers.Dense(128, activation='relu'),
+            tf.keras.layers.Dense(NUM_CATEGORIES)
+        ]
+    )
+
+    model.add(tf.keras.layers.Dense(8, input_shape=(
+        IMG_WIDTH, IMG_HEIGHT, 3), activation="relu"))
+
+    model.add(tf.keras.layers.Dense(NUM_CATEGORIES, activation="sigmoid"))
+
+    model.compile(optimizer='adam',
+                  loss="binary_crossentropy",
+                  metrics=['accuracy'])
+    model.summary()
+
+    return model
 
 
 if __name__ == "__main__":
