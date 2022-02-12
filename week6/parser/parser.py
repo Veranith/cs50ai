@@ -65,11 +65,11 @@ def preprocess(sentence):
     """
 
     tokens = nltk.word_tokenize(sentence)
-    result = set()
+    result = list()
     for word in tokens:
         word = word.lower()
         if word.isalpha():
-            result.add(word)
+            result.append(word)
     return result
 
 
@@ -80,7 +80,8 @@ def np_chunk(tree):
     whose label is "NP" that does not itself contain any other
     noun phrases as subtrees.
     """
-    raise NotImplementedError
+
+    return []
 
 
 if __name__ == "__main__":
