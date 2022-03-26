@@ -15,9 +15,36 @@ V -> "arrived" | "came" | "chuckled" | "had" | "lit" | "said" | "sat"
 V -> "smiled" | "tell" | "were"
 """
 
+# 'We arrived the day before Thursday.\n'
+# N   V       Det N   P      N
+
+# 'Holmes sat in the red armchair and he chuckled.\n'
+#  N      V   P  Det Adj N Conj N V
+
+# 'She never said a word until we were at the door here.\n'
+#  N   Adv   V    Det N  Conj  N  V    P  Det N    Adv
+
+# I had a little moist red paint in the palm of my hand.
+# N V   Det Adj  Adj   Adj N     P  Det N    P  Det N
+
 NONTERMINALS = """
-S -> N V
+S -> S Conj S
+S -> NP VP | NP VP NP | VP NP
+NP -> N
+NP -> Det NP
+NP -> Adj NP
+NP -> N PP
+PP -> P NP
+VP -> V
+VP -> V PP
+VP -> Adv VP
+VP -> VP Adv
 """
+# NP -> N P N
+# NP -> N Adv
+# VP -> Adv V
+# VP -> V Adv
+
 
 grammar = nltk.CFG.fromstring(NONTERMINALS + TERMINALS)
 parser = nltk.ChartParser(grammar)
